@@ -14,4 +14,4 @@ import 'phoenix_html';
 import socket from './socket';
 import Piano from './piano';
 
-Piano.init(socket);
+new Piano(socket);
