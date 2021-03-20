@@ -4,7 +4,7 @@ let Piano = {
   init(socket) {
     const channel = socket.channel('piano:lobby', {});
     const synth = new Tone.PolySynth({ voice: Tone.Synth }).toMaster();
-
+    document.getElementById('user-name').value = this.userNameGenerator();
     channel.join();
 
     document.documentElement.ondragstart = function () {
@@ -91,6 +91,57 @@ let Piano = {
     } else if (keyColor == 'black' && keyState == 'down') {
       key.style.backgroundColor = '#666699';
     }
+  },
+  userNameGenerator() {
+    // from https://www.randomlists.com/random-adjectives
+    const adjectives = [
+      'forgetful',
+      'zonked',
+      'deranged',
+      'friendly',
+      'tasteless',
+      'watery',
+      'doubtful',
+      'ripe',
+      'sticky',
+      'premium',
+      'military',
+      'bouncy',
+      'disastrous',
+      'tidy',
+      'jobless',
+      'puzzling',
+      'rich',
+      'humdrum',
+      'lyrical',
+      'horrible',
+      'thoughtful',
+      'silky',
+    ];
+    var animals = [
+      'gemsbok',
+      'cat',
+      'ocelot',
+      'ewe',
+      'capybara',
+      'mule',
+      'rat',
+      'hog',
+      'jerboa',
+      'goat',
+      'armadillo',
+      'finch',
+      'pony',
+      'polar bear',
+      'prairie dog',
+      'lemur',
+    ];
+
+    const randomSelect = (arr) => {
+      return arr[Math.floor(Math.random() * arr.length)];
+    };
+
+    return `${randomSelect(adjectives)} ${randomSelect(animals)}`;
   },
 };
 

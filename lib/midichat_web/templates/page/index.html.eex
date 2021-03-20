@@ -3,7 +3,7 @@
 </div>
 
 <form id="chat-form">
-  <input type="text" placeholder="Username" id="user-name"></input>
+  Username: <input type="text" placeholder="Username" id="user-name"></input>
 </form>
 
 <div id="keyboard">
