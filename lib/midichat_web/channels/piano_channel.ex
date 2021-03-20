@@ -17,5 +17,9 @@ defmodule MidichatWeb.PianoChannel do
     broadcast socket, "stop", payload
     {:noreply, socket}
   end
+  def handle_in("newJoiner", payload, socket) do
+    broadcast socket, "newJoiner", payload
+    {:noreply, socket}
+  end
 
 end

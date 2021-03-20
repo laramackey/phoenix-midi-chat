@@ -5,7 +5,11 @@ let Piano = {
     const channel = socket.channel('piano:lobby', {});
     const synth = new Tone.PolySynth({ voice: Tone.Synth }).toMaster();
     document.getElementById('user-name').value = this.userNameGenerator();
+    const userName = document.getElementById('user-name').value;
+    const userColour = this.userColourGenerator();
+
     channel.join();
+    channel.push('newJoiner', { name: userName, body: userColour });
 
     document.documentElement.ondragstart = function () {
       return false;
@@ -21,42 +25,47 @@ let Piano = {
     var keyboard = document.getElementById('keyboard');
     for (let key of keyboard.children) {
       key.addEventListener('mouseover', () => {
-        if (mouseIsDown) this.playNote(synth, key, channel);
+        if (mouseIsDown) this.playNote(key, channel);
       });
       key.addEventListener('mousedown', () => {
-        this.playNote(synth, key, channel);
+        this.playNote(key, channel);
       });
       key.addEventListener('touchstart', () => {
-        this.playNote(synth, key, channel);
+        this.playNote(key, channel);
       });
       key.addEventListener('mouseleave', () => {
-        this.releaseNote(synth, key, channel);
+        this.releaseNote(key, channel);
       });
       key.addEventListener('mouseup', () => {
-        this.releaseNote(synth, key, channel);
+        this.releaseNote(key, channel);
       });
       key.addEventListener('touchend', () => {
-        this.releaseNote(synth, key, channel);
+        this.releaseNote(key, channel);
       });
     }
-    this.listenForChats(channel, synth);
+    this.listenForBandMates(channel);
+    this.listenForNotes(channel, synth);
   },
 
-  listenForChats(channel, synth) {
+  listenForNotes(channel, synth) {
     channel.on('play', (payload) => {
+      this.soundNote(synth, payload.body);
+    });
+    channel.on('stop', (payload) => {
+      this.stopNote(synth, payload.body);
+    });
+  },
+
+  listenForBandMates(channel) {
+    channel.on('newJoiner', (payload) => {
       let chatBox = document.querySelector('#chat-box');
       let msgBlock = document.createElement('p');
 
       msgBlock.insertAdjacentHTML(
         'beforeend',
-        `<b>${payload.name}:</b> ${payload.body}`
+        `<p style="color:${payload.body}"><b>${payload.name}:</b> has joined the session</p>`
       );
       chatBox.appendChild(msgBlock);
-
-      this.soundNote(synth, payload.body);
-    });
-    channel.on('stop', (payload) => {
-      this.stopNote(synth, payload.body);
     });
   },
 
@@ -68,13 +77,13 @@ let Piano = {
     synth.triggerRelease([note], undefined, 1);
   },
 
-  playNote(synth, key, channel) {
+  playNote(key, channel) {
     let userName = document.getElementById('user-name').value;
     channel.push('play', { name: userName, body: key.dataset.note });
     this.updateKeyColor(key, 'down');
   },
 
-  releaseNote(synth, key, channel) {
+  releaseNote(key, channel) {
     let userName = document.getElementById('user-name').value;
     channel.push('stop', { name: userName, body: key.dataset.note });
     this.updateKeyColor(key, 'up');
@@ -137,11 +146,23 @@ let Piano = {
       'lemur',
     ];
 
-    const randomSelect = (arr) => {
-      return arr[Math.floor(Math.random() * arr.length)];
-    };
-
-    return `${randomSelect(adjectives)} ${randomSelect(animals)}`;
+    return `${this.randomSelect(adjectives)} ${this.randomSelect(animals)}`;
+  },
+  userColourGenerator() {
+    const colours = [
+      '#6F5071',
+      '#B4667F',
+      '#EC8777',
+      '#FFBA68',
+      '#F9F871',
+      '#00C6C2',
+      '#664D7C',
+      '#935054',
+    ];
+    return this.randomSelect(colours);
+  },
+  randomSelect(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
   },
 };
 
