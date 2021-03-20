@@ -9,8 +9,12 @@ defmodule MidichatWeb.PianoChannel do
   # It is also common to receive messages from the client and
   # broadcast to everyone in the current topic (piano:lobby).
   @impl true
-  def handle_in("shout", payload, socket) do
-    broadcast socket, "shout", payload
+  def handle_in("play", payload, socket) do
+    broadcast socket, "play", payload
+    {:noreply, socket}
+  end
+  def handle_in("stop", payload, socket) do
+    broadcast socket, "stop", payload
     {:noreply, socket}
   end
 

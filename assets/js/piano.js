@@ -2,71 +2,48 @@ import * as Tone from 'tone';
 
 let Piano = {
   init(socket) {
-    let channel = socket.channel('piano:lobby', {});
+    const channel = socket.channel('piano:lobby', {});
+    const synth = new Tone.PolySynth({ voice: Tone.Synth }).toMaster();
+
     channel.join();
-    this.listenForChats(channel);
 
     document.documentElement.ondragstart = function () {
       return false;
     };
-    var mouse_IsDown = false;
+    var mouseIsDown = false;
     document.documentElement.addEventListener('mousedown', function () {
-      mouse_IsDown = true;
+      mouseIsDown = true;
     });
     document.documentElement.addEventListener('mouseup', function () {
-      mouse_IsDown = false;
+      mouseIsDown = false;
     });
-
-    const synth = new Tone.PolySynth({ voice: Tone.Synth }).toMaster();
-    function update_KeyColor(key, keyState) {
-      let keyColor = key.matches('.white') ? 'white' : 'black';
-      if (keyColor == 'white' && keyState == 'up') {
-        key.style.backgroundColor = '#CBCBCB';
-      } else if (keyColor == 'white' && keyState == 'down') {
-        key.style.backgroundColor = '#BBBBDD';
-      } else if (keyColor == 'black' && keyState == 'up') {
-        key.style.backgroundColor = '#222222';
-      } else if (keyColor == 'black' && keyState == 'down') {
-        key.style.backgroundColor = '#666699';
-      }
-    }
-
-    function play_Note(key) {
-      let userName = document.getElementById('user-name').value;
-      channel.push('shout', { name: userName, body: key.dataset.note });
-      synth.triggerAttack([key.dataset.note], undefined, 1);
-      update_KeyColor(key, 'down');
-    }
-    function release_Note(key) {
-      synth.triggerRelease([key.dataset.note], undefined);
-      update_KeyColor(key, 'up');
-    }
 
     var keyboard = document.getElementById('keyboard');
     for (let key of keyboard.children) {
       key.addEventListener('mouseover', () => {
-        if (mouse_IsDown) play_Note(key);
+        if (mouseIsDown) this.playNote(synth, key, channel);
       });
       key.addEventListener('mousedown', () => {
-        play_Note(key);
+        this.playNote(synth, key, channel);
       });
       key.addEventListener('touchstart', () => {
-        play_Note(key);
+        this.playNote(synth, key, channel);
       });
       key.addEventListener('mouseleave', () => {
-        release_Note(key);
+        this.releaseNote(synth, key, channel);
       });
       key.addEventListener('mouseup', () => {
-        release_Note(key);
+        this.releaseNote(synth, key, channel);
       });
       key.addEventListener('touchend', () => {
-        release_Note(key);
+        this.releaseNote(synth, key, channel);
       });
     }
+    this.listenForChats(channel, synth);
   },
 
-  listenForChats(channel) {
-    channel.on('shout', (payload) => {
+  listenForChats(channel, synth) {
+    channel.on('play', (payload) => {
       let chatBox = document.querySelector('#chat-box');
       let msgBlock = document.createElement('p');
 
@@ -75,7 +52,45 @@ let Piano = {
         `<b>${payload.name}:</b> ${payload.body}`
       );
       chatBox.appendChild(msgBlock);
+
+      this.soundNote(synth, payload.body);
     });
+    channel.on('stop', (payload) => {
+      this.stopNote(synth, payload.body);
+    });
+  },
+
+  soundNote(synth, note) {
+    synth.triggerAttack([note], undefined, 1);
+  },
+
+  stopNote(synth, note) {
+    synth.triggerRelease([note], undefined, 1);
+  },
+
+  playNote(synth, key, channel) {
+    let userName = document.getElementById('user-name').value;
+    channel.push('play', { name: userName, body: key.dataset.note });
+    this.updateKeyColor(key, 'down');
+  },
+
+  releaseNote(synth, key, channel) {
+    let userName = document.getElementById('user-name').value;
+    channel.push('stop', { name: userName, body: key.dataset.note });
+    this.updateKeyColor(key, 'up');
+  },
+
+  updateKeyColor(key, keyState) {
+    let keyColor = key.matches('.white') ? 'white' : 'black';
+    if (keyColor == 'white' && keyState == 'up') {
+      key.style.backgroundColor = '#CBCBCB';
+    } else if (keyColor == 'white' && keyState == 'down') {
+      key.style.backgroundColor = '#BBBBDD';
+    } else if (keyColor == 'black' && keyState == 'up') {
+      key.style.backgroundColor = '#222222';
+    } else if (keyColor == 'black' && keyState == 'down') {
+      key.style.backgroundColor = '#666699';
+    }
   },
 };
 
