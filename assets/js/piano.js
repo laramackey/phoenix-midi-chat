@@ -38,13 +38,10 @@ class Piano {
     function onMidiAccessFailure(error) {
       console.log('Oopsy woopsy', error.code);
     }
-  }
-
-  handleJoined() {
     document.documentElement.ondragstart = function () {
       return false;
     };
-    var mouseIsDown = false;
+    let mouseIsDown = false;
     document.documentElement.addEventListener('mousedown', function () {
       mouseIsDown = true;
     });
@@ -52,7 +49,7 @@ class Piano {
       mouseIsDown = false;
     });
 
-    var keyboard = document.getElementById('keyboard');
+    const keyboard = document.getElementById('keyboard');
     for (let key of keyboard.children) {
       key.addEventListener('mouseover', () => {
         if (mouseIsDown) this.sendNote(key.id);
@@ -73,6 +70,9 @@ class Piano {
         this.stopNote(key.id);
       });
     }
+  }
+
+  handleJoined() {
     this.getPrecenseList();
     this.listenForBandMates();
     this.listenForNotes();
@@ -124,16 +124,26 @@ class Piano {
   }
 
   sendNote(note) {
-    const userName = document.getElementById('user-name').value;
-    this.channel.push('play', {
-      name: userName,
-      body: { userColour: this.userColour, note },
-    });
+    if (this.channel) {
+      const userName = document.getElementById('user-name').value;
+      this.channel.push('play', {
+        name: userName,
+        body: { userColour: this.userColour, note },
+      });
+    } else {
+      this.synth.triggerAttack(note, undefined, 1);
+      this.updateKeyColor({ note, userColour: this.userColour });
+    }
   }
 
   stopNote(note) {
-    let userName = document.getElementById('user-name').value;
-    this.channel.push('stop', { name: userName, body: { note } });
+    if (this.channel) {
+      const userName = document.getElementById('user-name').value;
+      this.channel.push('stop', { name: userName, body: { note } });
+    } else {
+      this.synth.triggerRelease(note, undefined, 1);
+      this.revertKeyColor(note);
+    }
   }
 
   listenForNotes() {
