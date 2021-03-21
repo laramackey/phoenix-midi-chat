@@ -76,11 +76,14 @@ class Piano {
   }
 
   handleMidiMessage(message) {
+    console.log(message.data);
+    const noteOnMidi = 144;
+    const noteOffMidi = 128;
     const note = Tone.Midi(message.data[1]).toNote();
 
-    if (message.data[2] === 0) {
+    if (message.data[0] === noteOffMidi) {
       this.stopNote(note);
-    } else {
+    } else if (message.data[0] === noteOnMidi) {
       this.sendNote(note);
     }
   }
