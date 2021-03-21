@@ -18,9 +18,16 @@ class Piano {
       body: { userColour: this.userColour },
     });
 
-    navigator
-      .requestMIDIAccess()
-      .then((access) => this.onMidiAccessSuccess(access), onMidiAccessFailure);
+    try {
+      navigator
+        .requestMIDIAccess()
+        .then(
+          (access) => this.onMidiAccessSuccess(access),
+          onMidiAccessFailure
+        );
+    } catch (err) {
+      console.log('Oopsy woopsy', err);
+    }
 
     function onMidiAccessFailure(error) {
       console.log('Oopsy woopsy', error.code);
@@ -35,6 +42,11 @@ class Piano {
     });
     document.documentElement.addEventListener('mouseup', function () {
       mouseIsDown = false;
+    });
+
+    document.getElementById('soundOnButton').addEventListener('click', () => {
+      Tone.start();
+      console.log('audio is ready');
     });
 
     var keyboard = document.getElementById('keyboard');
