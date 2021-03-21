@@ -10,13 +10,6 @@ class Piano {
   }
   init() {
     document.getElementById('user-name').value = userNameGenerator();
-    const userName = document.getElementById('user-name').value;
-
-    this.channel.join();
-    this.channel.push('newJoiner', {
-      name: userName,
-      body: { userColour: this.userColour },
-    });
 
     try {
       navigator
@@ -26,6 +19,8 @@ class Piano {
           onMidiAccessFailure
         );
     } catch (err) {
+      document.getElementById('midiDevice').innerHTML =
+        'Browser does not support midi, try Chrome';
       console.log('Oopsy woopsy', err);
     }
 
@@ -46,7 +41,13 @@ class Piano {
 
     document.getElementById('soundOnButton').addEventListener('click', () => {
       Tone.start();
-      console.log('audio is ready');
+      const userName = document.getElementById('user-name').value;
+
+      this.channel.join();
+      this.channel.push('newJoiner', {
+        name: userName,
+        body: { userColour: this.userColour },
+      });
     });
 
     var keyboard = document.getElementById('keyboard');
@@ -91,6 +92,8 @@ class Piano {
     var inputIterators = inputs.values();
 
     var firstInput = inputIterators.next().value;
+    document.getElementById('midiDevice').innerHTML = firstInput.name;
+    console.log(firstInput.name);
 
     if (!firstInput) return;
     firstInput.onmidimessage = (message) => this.handleMidiMessage(message);

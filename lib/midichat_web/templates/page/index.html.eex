@@ -4,14 +4,16 @@
   <label for='user-name'>Username:   </label><input type="text" placeholder="Username" id="user-name"></input>
 </form>
 
-<div id ="soundOnButtonDiv">
-<button type="button" id ="soundOnButton">Start audio</button>
+<div id="soundOnButtonDiv">
+<button type="button" id="soundOnButton">Join</button>
+</div>
+
+<div id ="midiInfo">
+Midi Device: <p id="midiDevice">no device detected</p>
 </div>
 
 <div id="chat-box">
 </div>
-
-
 
 <div class="keyboard" id="keyboard">
   <div class="key white c" id="C3"></div>
