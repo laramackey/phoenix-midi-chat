@@ -6,7 +6,7 @@ defmodule MidichatWeb.PianoChannel do
   @impl true
   def join("piano:lobby", payload, socket) do
     send(self(), :after_join)
-    {:ok, assign(socket, :user_name, payload)}
+    {:ok, assign(socket, :user_data, payload)}
   end
 
   # It is also common to receive messages from the client and
@@ -20,14 +20,10 @@ defmodule MidichatWeb.PianoChannel do
     broadcast socket, "stop", payload
     {:noreply, socket}
   end
-  def handle_in("newJoiner", payload, socket) do
-    broadcast socket, "newJoiner", payload
-    {:noreply, socket}
-  end
 
   def handle_info(:after_join, socket) do
     {:ok, _} = Presence.track(socket, socket.assigns.user_token, %{
-      user_name: socket.assigns.user_name,
+      user_data: socket.assigns.user_data,
       online_at: inspect(System.system_time(:second))
     })
 

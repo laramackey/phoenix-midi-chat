@@ -7,18 +7,18 @@ class Piano {
     this.socket = socket;
     this.channel = null;
     this.synth = new Tone.PolySynth({ voice: Tone.Synth }).toMaster();
+    this.precenses = null;
     this.init();
   }
   init() {
     document.getElementById('soundOnButton').addEventListener('click', () => {
       Tone.start();
       const userName = document.getElementById('user-name').value;
-      this.channel = this.socket.channel('piano:lobby', userName);
-      this.channel.join();
-      this.channel.push('newJoiner', {
-        name: userName,
-        body: { userColour: this.userColour },
+      this.channel = this.socket.channel('piano:lobby', {
+        userName,
+        userColour: this.userColour,
       });
+      this.channel.join();
       this.handleJoined();
     });
     document.getElementById('user-name').value = userNameGenerator();
@@ -41,10 +41,6 @@ class Piano {
   }
 
   handleJoined() {
-    this.channel.on('presence_diff', (payload) => {
-      console.dir(payload);
-    });
-
     document.documentElement.ondragstart = function () {
       return false;
     };
@@ -77,12 +73,31 @@ class Piano {
         this.stopNote(key.id);
       });
     }
+    this.getPrecenseList();
     this.listenForBandMates();
     this.listenForNotes();
   }
+  getPrecenseList() {
+    this.channel.on('presence_state', (state) => {
+      let chatBox = document.querySelector('#chat-box');
+      let msgBlock = document.createElement('p');
+      const userData = Object.keys(state)
+        .map((user) => {
+          return state[user].metas[0].user_data;
+        })
+        .filter((user) => user.hasOwnProperty('userName'));
+      userData.forEach((user) => {
+        msgBlock.insertAdjacentHTML(
+          'beforeend',
+          `<p style="color:${user.userColour}"><b>${user.userName}:</b> is in da house</p>`
+        );
+        chatBox.innerHTML = '';
+        chatBox.appendChild(msgBlock);
+      });
+    });
+  }
 
   handleMidiMessage(message) {
-    console.log(message.data);
     const noteOnMidi = 144;
     const noteOffMidi = 128;
     const note = Tone.Midi(message.data[1]).toNote();
@@ -133,15 +148,29 @@ class Piano {
   }
 
   listenForBandMates() {
-    this.channel.on('newJoiner', (payload) => {
+    this.channel.on('presence_diff', (payload) => {
       let chatBox = document.querySelector('#chat-box');
       let msgBlock = document.createElement('p');
-
-      msgBlock.insertAdjacentHTML(
-        'beforeend',
-        `<p style="color:${payload.body.userColour}"><b>${payload.name}:</b> has joined the session</p>`
-      );
-      chatBox.appendChild(msgBlock);
+      const joiners = Object.keys(payload.joins)
+        .map((user) => payload.joins[user].metas[0].user_data)
+        .filter((user) => user.hasOwnProperty('userName'));
+      joiners.forEach((user) => {
+        msgBlock.insertAdjacentHTML(
+          'beforeend',
+          `<p style="color:${user.userColour}"><b>${user.userName}:</b> is in da house</p>`
+        );
+        chatBox.appendChild(msgBlock);
+      });
+      const leavers = Object.keys(payload.leaves)
+        .map((user) => payload.leaves[user].metas[0].user_data)
+        .filter((user) => user.hasOwnProperty('userName'));
+      leavers.forEach((user) => {
+        msgBlock.insertAdjacentHTML(
+          'beforeend',
+          `<p style="color:${user.userColour}"><b>${user.userName}:</b> has left the room</p>`
+        );
+        chatBox.appendChild(msgBlock);
+      });
     });
   }
 
