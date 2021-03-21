@@ -10,7 +10,8 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :midichat, MidichatWeb.Endpoint,
-  url: [host: "example.com", port: 80],
+  url: [host: "midichat.gigalixirapp.com", port: 443],
+  check_origin: ["//localhost", "//midichat.gigalixirapp.com"],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Do not print debug messages in production
