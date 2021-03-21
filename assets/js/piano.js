@@ -13,7 +13,7 @@ class Piano {
     document.getElementById('soundOnButton').addEventListener('click', () => {
       Tone.start();
       const userName = document.getElementById('user-name').value;
-      this.channel = this.socket.channel('piano:lobby');
+      this.channel = this.socket.channel('piano:lobby', userName);
       this.channel.join();
       this.channel.push('newJoiner', {
         name: userName,
