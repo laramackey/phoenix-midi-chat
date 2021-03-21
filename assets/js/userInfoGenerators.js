@@ -50,7 +50,7 @@ export const userColourGenerator = () => {
     '#6F5071',
     '#B4667F',
     '#EC8777',
-    '#FFBA68',
+    '#808000',
     '#F9F871',
     '#00C6C2',
     '#664D7C',
