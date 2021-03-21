@@ -16,7 +16,8 @@ config :midichat, MidichatWeb.Endpoint,
   secret_key_base: "D2STeqVPsksRhcp6/ZCEFov67oynnCXPHO2alVSkBpmv+uOO/tfNuildyrn4qSh2",
   render_errors: [view: MidichatWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Midichat.PubSub,
-  live_view: [signing_salt: "wn9LUC1U"]
+  live_view: [signing_salt: "wn9LUC1U"],
+  force_ssl: [rewrite_on: [:x_forwarded_proto]]
 
 # Configures Elixir's Logger
 config :logger, :console,
