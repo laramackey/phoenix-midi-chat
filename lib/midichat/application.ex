@@ -13,8 +13,11 @@ defmodule Midichat.Application do
       MidichatWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Midichat.PubSub},
+      # add Presence module
+      MidichatWeb.Presence,
       # Start the Endpoint (http/https)
       MidichatWeb.Endpoint
+
       # Start a worker by calling: Midichat.Worker.start_link(arg)
       # {Midichat.Worker, arg}
     ]

@@ -4,11 +4,23 @@ import { userNameGenerator, userColourGenerator } from './userInfoGenerators';
 class Piano {
   constructor(socket) {
     this.userColour = userColourGenerator();
-    this.channel = socket.channel('piano:lobby', {});
+    this.socket = socket;
+    this.channel = null;
     this.synth = new Tone.PolySynth({ voice: Tone.Synth }).toMaster();
     this.init();
   }
   init() {
+    document.getElementById('soundOnButton').addEventListener('click', () => {
+      Tone.start();
+      const userName = document.getElementById('user-name').value;
+      this.channel = this.socket.channel('piano:lobby');
+      this.channel.join();
+      this.channel.push('newJoiner', {
+        name: userName,
+        body: { userColour: this.userColour },
+      });
+      this.handleJoined();
+    });
     document.getElementById('user-name').value = userNameGenerator();
 
     try {
@@ -23,10 +35,15 @@ class Piano {
         'Browser does not support midi, try Chrome';
       console.log('Oopsy woopsy', err);
     }
-
     function onMidiAccessFailure(error) {
       console.log('Oopsy woopsy', error.code);
     }
+  }
+
+  handleJoined() {
+    this.channel.on('presence_diff', (payload) => {
+      console.dir(payload);
+    });
 
     document.documentElement.ondragstart = function () {
       return false;
@@ -37,17 +54,6 @@ class Piano {
     });
     document.documentElement.addEventListener('mouseup', function () {
       mouseIsDown = false;
-    });
-
-    document.getElementById('soundOnButton').addEventListener('click', () => {
-      Tone.start();
-      const userName = document.getElementById('user-name').value;
-
-      this.channel.join();
-      this.channel.push('newJoiner', {
-        name: userName,
-        body: { userColour: this.userColour },
-      });
     });
 
     var keyboard = document.getElementById('keyboard');
@@ -91,14 +97,14 @@ class Piano {
   onMidiAccessSuccess(access) {
     const midiAccess = access;
 
-    var inputs = midiAccess.inputs;
-    var inputIterators = inputs.values();
+    const inputs = midiAccess.inputs;
+    const inputIterators = inputs.values();
 
-    var firstInput = inputIterators.next().value;
-    document.getElementById('midiDevice').innerHTML = firstInput.name;
-    console.log(firstInput.name);
+    const firstInput = inputIterators.next().value;
 
     if (!firstInput) return;
+    document.getElementById('midiDevice').innerHTML = firstInput.name;
+
     firstInput.onmidimessage = (message) => this.handleMidiMessage(message);
   }
 

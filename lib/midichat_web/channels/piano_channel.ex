@@ -1,8 +1,11 @@
 defmodule MidichatWeb.PianoChannel do
   use MidichatWeb, :channel
 
+  alias MidichatWeb.Presence
+
   @impl true
   def join("piano:lobby", _payload, socket) do
+    send(self(), :after_join)
     {:ok, socket}
   end
 
@@ -19,6 +22,15 @@ defmodule MidichatWeb.PianoChannel do
   end
   def handle_in("newJoiner", payload, socket) do
     broadcast socket, "newJoiner", payload
+    {:noreply, socket}
+  end
+
+  def handle_info(:after_join, socket) do
+    {:ok, _} = Presence.track(socket, socket.assigns.user_token, %{
+      online_at: inspect(System.system_time(:second))
+    })
+
+    push(socket, "presence_state", Presence.list(socket))
     {:noreply, socket}
   end
 
