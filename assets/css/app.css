@@ -70,11 +70,13 @@ td {
   width: 70%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 #chatBox {
   overflow-y: scroll;
   padding: 0 0 0 5px;
+  height: 220px;
 }
 
 #usersBox {
@@ -101,12 +103,12 @@ td {
   padding: 5px;
 }
 
-#chat-form {
+#joinForm {
   text-align: left;
   display: inline;
 }
 
-#user-name {
+#userName {
   background-color: #cbcbcb;
   border: 1px solid #e3bab3;
   margin-top: 5px;
@@ -117,13 +119,13 @@ td {
   padding-top: 10px;
 }
 
-#soundOnButtonDiv {
+#joinButtonDiv {
   display: inline;
   text-align: right;
   font-size: 20px;
 }
 
-#soundOnButton {
+#joinButton {
   font-size: 18px;
   background-color: #cbcbcb;
 }
@@ -136,4 +138,69 @@ td {
 #midiDevice {
   display: inline;
   font-size: 20px;
+}
+
+#chatMessage {
+  position: absolute;
+  width: 100%;
+  bottom: 0px;
+  height: 38px;
+}
+
+.inputWrapper {
+  position: absolute;
+  right: 110px;
+  left: 0px;
+  top: 0px;
+  bottom: 0px;
+}
+
+.formWrapper {
+  position: relative;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 37px;
+  display: inline-block;
+}
+
+.formWrapper input {
+  height: 100%;
+  width: 100%;
+  padding: 8px 10px;
+  float: left;
+  color: #36384c;
+  outline-color: #e3bab3;
+  border: 0;
+  background: #e6e6e6;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box; /* Firefox, other Gecko */
+  box-sizing: border-box; /* Opera/IE 8+ */
+}
+
+/* Form submit button */
+.formWrapper button {
+  font-size: 18px;
+  color: #e3bab3;
+  background-color: #36384c;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  overflow: visible;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  height: 37px;
+  width: 104px;
+  outline-color: #e3bab3;
+}
+
+.formWrapper button:disabled {
+  background: #dddddd;
+}
+
+.formWrapper button::-moz-focus-inner {
+  /* remove extra button spacing for Mozilla Firefox */
+  border: 0;
+  padding: 0;
 }

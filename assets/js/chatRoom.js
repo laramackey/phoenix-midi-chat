@@ -9,20 +9,22 @@ class ChatRoom {
     this.channel = null;
     this.synth = new Tone.PolySynth({ voice: Tone.Synth }).toMaster();
     this.precenses = null;
+    this.userName = null;
     this.init();
   }
   init() {
-    document.getElementById('soundOnButton').addEventListener('click', () => {
+    document.getElementById('userName').value = userNameGenerator();
+    document.getElementById('joinForm').addEventListener('submit', (e) => {
+      e.preventDefault();
       Tone.start();
-      const userName = document.getElementById('user-name').value;
+      this.userName = document.getElementById('userName').value;
       this.channel = this.socket.channel('piano:lobby', {
-        userName,
+        userName: this.userName,
         userColour: this.userColour,
       });
       this.channel.join();
       this.handleJoined();
     });
-    document.getElementById('user-name').value = userNameGenerator();
 
     try {
       navigator
@@ -77,6 +79,44 @@ class ChatRoom {
     this.getPrecenseList();
     this.listenForBandMates();
     this.listenForNotes();
+    this.handleChatMessage();
+
+    document.getElementById('messageSubmit').disabled = false;
+
+    document.getElementById('sendMessage').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.sendMessage();
+    });
+  }
+
+  sendMessage() {
+    const message = document.getElementById('message').value;
+    if (message) {
+      this.channel.push('message', {
+        name: this.userName,
+        body: { userColour: this.userColour, message },
+      });
+      document.getElementById('message').value = '';
+      const chatBox = document.getElementById('chatBox');
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  }
+
+  handleChatMessage() {
+    this.channel.on('message', (payload) => {
+      console.dir(payload);
+
+      let chatBox = document.querySelector('#chatBox');
+      let msgBlock = document.createElement('p');
+
+      if (payload.body.message) {
+        msgBlock.insertAdjacentHTML(
+          'beforeend',
+          `<p style="color:${payload.body.userColour}"><b>${payload.name}:</b> ${payload.body.message}</p>`
+        );
+        chatBox.appendChild(msgBlock);
+      }
+    });
   }
 
   handleMidiMessage(message) {
@@ -107,9 +147,8 @@ class ChatRoom {
 
   sendNote(note) {
     if (this.channel) {
-      const userName = document.getElementById('user-name').value;
       this.channel.push('play', {
-        name: userName,
+        name: this.userName,
         body: { userColour: this.userColour, note },
       });
     } else {
@@ -120,8 +159,7 @@ class ChatRoom {
 
   stopNote(note) {
     if (this.channel) {
-      const userName = document.getElementById('user-name').value;
-      this.channel.push('stop', { name: userName, body: { note } });
+      this.channel.push('stop', { name: this.userName, body: { note } });
     } else {
       this.synth.triggerRelease(note, undefined, 1);
       revertKeyColor(note);

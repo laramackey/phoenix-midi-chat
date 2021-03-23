@@ -21,6 +21,11 @@ defmodule MidichatWeb.PianoChannel do
     {:noreply, socket}
   end
 
+  def handle_in("message", payload, socket) do
+    broadcast socket, "message", payload
+    {:noreply, socket}
+  end
+
   def handle_info(:after_join, socket) do
     {:ok, _} = Presence.track(socket, socket.assigns.user_id, %{
       user_data: socket.assigns.user_data,
