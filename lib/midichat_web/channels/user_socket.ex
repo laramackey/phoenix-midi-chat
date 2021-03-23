@@ -17,8 +17,7 @@ defmodule MidichatWeb.UserSocket do
   # performing token verification on connect.
   @impl true
   def connect(params, socket, _connect_info) do
-    IO.inspect params
-    {:ok, assign(socket, :user_token, params["token"])}
+    {:ok, assign(socket, :user_id, params["user_id"])}
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:

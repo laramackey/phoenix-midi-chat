@@ -12,6 +12,6 @@ import 'phoenix_html';
 //
 //     import {Socket} from "phoenix"
 import socket from './socket';
-import Piano from './piano';
+import ChatRoom from './chatRoom';
 
-new Piano(socket);
+new ChatRoom(socket);

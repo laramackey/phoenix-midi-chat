@@ -22,7 +22,7 @@ defmodule MidichatWeb.PianoChannel do
   end
 
   def handle_info(:after_join, socket) do
-    {:ok, _} = Presence.track(socket, socket.assigns.user_token, %{
+    {:ok, _} = Presence.track(socket, socket.assigns.user_id, %{
       user_data: socket.assigns.user_data,
       online_at: inspect(System.system_time(:second))
     })

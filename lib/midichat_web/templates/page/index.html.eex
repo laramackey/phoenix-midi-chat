@@ -11,10 +11,16 @@
 <div id ="midiInfo">
 Midi Device: <p id="midiDevice">no device detected</p>
 </div>
-
-<div id="chat-box">
+<div id="chatWrapper">
+  <div id="chatContainer">
+    <div class="chatHeading">Chat</div>
+    <div id="chatBox"></div>
+  </div>
+  <div id="usersContainer">
+    <div class="chatHeading">Online Users</div>
+    <div id="usersBox"></div>
+  </div>
 </div>
-
 <div class="keyboard" id="keyboard">
   <div class="key white c" id="C3"></div>
   <div class="key black c_sharp" id="C#3"></div>

@@ -7,14 +7,13 @@ defmodule MidichatWeb.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug :put_user_token
+    plug :put_user_id
   end
 
-  defp put_user_token(conn, _headers) do
-    current_user = conn.owner
-    user_id_token = Phoenix.Token.sign(conn, "user_token", current_user)
+  defp put_user_id(conn, _headers) do
+    current_user = Kernel.inspect(conn.owner) |> String.replace(~r/[^\d]/, "")
     conn
-    |> Plug.Conn.assign(:user_token, user_id_token)
+    |> Plug.Conn.assign(:user_id, current_user)
   end
 
   pipeline :api do
