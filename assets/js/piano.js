@@ -5,7 +5,7 @@ export class PianoController {
     this.channel = null;
     this.userName = null;
     this.userColour = userColour;
-    this.synth = new Tone.PolySynth({ voice: Tone.Synth }).toMaster();
+    this.synth = new Tone.PolySynth({ voice: Tone.Synth }).toDestination();
     this.init();
   }
   init() {
@@ -87,7 +87,7 @@ export class PianoController {
       });
     } else {
       this.synth.triggerAttack(note, undefined, 1);
-      updateKeyColor({ note, userColour: this.userColour });
+      this.updateKeyColor({ note, userColour: this.userColour });
     }
   }
 
@@ -96,7 +96,7 @@ export class PianoController {
       this.channel.push('stop', { name: this.userName, body: { note } });
     } else {
       this.synth.triggerRelease(note, undefined, 1);
-      revertKeyColor(note);
+      this.revertKeyColor(note);
     }
   }
 
@@ -119,11 +119,11 @@ export class PianoController {
     this.channel = channel;
     this.channel.on('play', (payload) => {
       this.synth.triggerAttack([payload.body.note], undefined, 1);
-      updateKeyColor(payload.body);
+      this.updateKeyColor(payload.body);
     });
     this.channel.on('stop', (payload) => {
       this.synth.triggerRelease([payload.body.note], undefined, 1);
-      revertKeyColor(payload.body.note);
+      this.revertKeyColor(payload.body.note);
     });
   }
 

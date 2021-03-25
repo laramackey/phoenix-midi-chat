@@ -1,20 +1,21 @@
 import { userNameGenerator, userColourGenerator } from './userInfoGenerators';
 import { PianoController } from './piano';
+import { Presence } from 'phoenix';
 
 class ChatRoom {
   constructor(socket) {
     this.userColour = userColourGenerator();
     this.socket = socket;
+    this.presences = {};
     this.channel = null;
     this.userName = null;
     this.init();
   }
   init() {
+    const piano = new PianoController(this.userColour);
     document.getElementById('userName').value = userNameGenerator();
     document.getElementById('joinForm').addEventListener('submit', (e) => {
       e.preventDefault();
-
-      const piano = new PianoController(this.userColour);
       piano.startTone();
 
       const userName = document.getElementById('userName').value;
@@ -71,60 +72,59 @@ class ChatRoom {
 
   getPrecenseList() {
     this.channel.on('presence_state', (state) => {
-      const onlineUserBox = document.querySelector('#usersBox');
-      const onlineUsers = document.createElement('p');
-      const userData = Object.keys(state)
-        .map((user) => Object.assign({ user }, state[user].metas[0].user_data))
-        .filter((user) => user.hasOwnProperty('userName'));
-      userData.forEach((user) => {
+      this.presences = Presence.syncState(this.presences, state);
+      this.updateOnlineUsersList();
+    });
+  }
+
+  updateOnlineUsersList() {
+    const onlineUserBox = document.querySelector('#usersBox');
+    const onlineUsers = document.createElement('p');
+    Object.keys(this.presences)
+      .map((user) =>
+        Object.assign({ user }, this.presences[user].metas[0].user_data)
+      )
+      .filter((user) => user.hasOwnProperty('userName'))
+      .forEach((user) => {
         onlineUsers.insertAdjacentHTML(
           'beforeend',
           `<p id="${user.user}" style="color:${user.userColour}"><b>${user.userName}</b></p>`
         );
       });
-      onlineUserBox.innerHTML = '';
-      onlineUserBox.appendChild(onlineUsers);
-    });
+    onlineUserBox.innerHTML = '';
+    onlineUserBox.appendChild(onlineUsers);
   }
 
   listenForBandMates() {
     this.channel.on('presence_diff', (payload) => {
       const chatBox = document.querySelector('#chatBox');
       const msgBlock = document.createElement('p');
-      const onlineUserBox = document.querySelector('#usersBox');
-      const onlineUsers = document.createElement('p');
-
-      const joiners = Object.keys(payload.joins)
+      Object.keys(payload.joins)
         .map((user) =>
-          Object.assign({ user }, payload.joins[user].metas[0].user_data)
+          Object.assign({ user }, payload.joins[user]?.metas[0]?.user_data)
         )
-        .filter((user) => user.hasOwnProperty('userName'));
-      joiners.forEach((user) => {
-        msgBlock.insertAdjacentHTML(
-          'beforeend',
-          `<p style="color:${user.userColour}"><b>${user.userName}:</b> is in da house</p>`
-        );
-        if (!document.getElementById(user.user)) {
-          onlineUsers.insertAdjacentHTML(
+        .filter((user) => user.hasOwnProperty('userName'))
+        .forEach((user) => {
+          msgBlock.insertAdjacentHTML(
             'beforeend',
-            `<p id="${user.user}" style="color:${user.userColour}"><b>${user.userName}</b></p>`
+            `<p style="color:${user.userColour}"><b>${user.userName}:</b> is in da house</p>`
           );
-        }
-      });
-      const leavers = Object.keys(payload.leaves)
+        });
+      Object.keys(payload.leaves)
         .map((user) =>
-          Object.assign({ user }, payload.leaves[user].metas[0].user_data)
+          Object.assign({ user }, payload.leaves[user]?.metas[0].user_data)
         )
-        .filter((user) => user.hasOwnProperty('userName'));
-      leavers.forEach((user) => {
-        msgBlock.insertAdjacentHTML(
-          'beforeend',
-          `<p style="color:${user.userColour}"><b>${user.userName}:</b> has left the room</p>`
-        );
-        document.getElementById(user.user).remove();
-      });
+        .filter((user) => user.hasOwnProperty('userName'))
+        .forEach((user) => {
+          msgBlock.insertAdjacentHTML(
+            'beforeend',
+            `<p style="color:${user.userColour}"><b>${user.userName}:</b> has left the room</p>`
+          );
+        });
+
       chatBox.appendChild(msgBlock);
-      onlineUserBox.appendChild(onlineUsers);
+      this.presences = Presence.syncDiff(this.presences, payload);
+      this.updateOnlineUsersList();
     });
   }
 }
