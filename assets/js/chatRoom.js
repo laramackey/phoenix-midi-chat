@@ -25,8 +25,8 @@ class ChatRoom {
       piano.setUserName(userName);
       piano.joinChannel();
       this.channel.push('newUser', {
-        userName: userName,
-        userColour: this.userColour,
+        user_name: userName,
+        user_colour: this.userColour,
       });
       this.handleChatMessage();
 
@@ -77,49 +77,51 @@ class ChatRoom {
   updateOnlineUsersList() {
     const onlineUserBox = document.querySelector('#usersBox');
     const onlineUsers = document.createElement('p');
-    Object.keys(this.presences)
-      .map((user) =>
-        Object.assign({ user }, this.presences[user].metas[0].user_data)
-      )
-      .filter((user) => user.hasOwnProperty('userName'))
-      .forEach((user) => {
-        onlineUsers.insertAdjacentHTML(
-          'beforeend',
-          `<p id="${user.user}" style="color:${user.userColour}"><b>${user.userName}</b></p>`
-        );
-      });
+    this.getUserList(this.presences).forEach((user) => {
+      onlineUsers.insertAdjacentHTML(
+        'beforeend',
+        `<p id="${user.user}" style="color:${user.userColour}"><b>${user.userName}</b></p>`
+      );
+    });
     onlineUserBox.innerHTML = '';
     onlineUserBox.appendChild(onlineUsers);
+  }
+
+  getUserList(users) {
+    return Object.keys(users)
+      .filter((user) => users[user]?.metas[0]?.user_name)
+      .map((user) => {
+        return {
+          userId: user,
+          userName: users[user].metas[0].user_name,
+          userColour: users[user].metas[0].user_colour,
+        };
+      });
+  }
+  announceBandMates(users, message) {
+    const msgBlock = document.createElement('p');
+    this.getUserList(users).forEach((user) => {
+      msgBlock.insertAdjacentHTML(
+        'beforeend',
+        `<p style="color:${user.userColour}"><b>${user.userName}:</b> ${message}</p>`
+      );
+    });
+    return msgBlock;
   }
 
   listenForBandMates() {
     this.channel.on('presence_diff', (payload) => {
       const chatBox = document.querySelector('#chatBox');
-      const msgBlock = document.createElement('p');
-      Object.keys(payload.joins)
-        .map((user) =>
-          Object.assign({ user }, payload.joins[user]?.metas[0]?.user_data)
-        )
-        .filter((user) => user.hasOwnProperty('userName'))
-        .forEach((user) => {
-          msgBlock.insertAdjacentHTML(
-            'beforeend',
-            `<p style="color:${user.userColour}"><b>${user.userName}:</b> is in da house</p>`
-          );
-        });
-      Object.keys(payload.leaves)
-        .map((user) =>
-          Object.assign({ user }, payload.leaves[user]?.metas[0].user_data)
-        )
-        .filter((user) => user.hasOwnProperty('userName'))
-        .forEach((user) => {
-          msgBlock.insertAdjacentHTML(
-            'beforeend',
-            `<p style="color:${user.userColour}"><b>${user.userName}:</b> has left the room</p>`
-          );
-        });
-
-      chatBox.appendChild(msgBlock);
+      const leaversMessages = this.announceBandMates(
+        payload.leaves,
+        'has left the room'
+      );
+      const joinersMessages = this.announceBandMates(
+        payload.joins,
+        'is in da house'
+      );
+      chatBox.appendChild(leaversMessages);
+      chatBox.appendChild(joinersMessages);
       this.presences = Presence.syncDiff(this.presences, payload);
       this.updateOnlineUsersList();
     });

@@ -21,9 +21,10 @@ defmodule MidichatWeb.PianoChannel do
     {:noreply, socket}
   end
 
-  def handle_in("newUser", payload, socket) do  
+  def handle_in("newUser", %{"user_colour" => user_colour, "user_name" => user_name,}, socket) do  
     {:ok, _} = Presence.update(socket, socket.assigns.user_id, %{
-      user_data: payload
+      user_colour: user_colour,
+      user_name: user_name
     })
   
     {:reply, :ok, socket}
