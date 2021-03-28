@@ -1,9 +1,10 @@
 import * as Tone from 'tone';
 
 export class PianoController {
-  constructor(userColour) {
-    this.channel = null;
+  constructor(userColour, channel) {
+    this.channel = channel;
     this.userName = null;
+    this.joined = false;
     this.userColour = userColour;
     this.synth = new Tone.PolySynth({ voice: Tone.Synth }).toDestination();
     this.init();
@@ -80,7 +81,7 @@ export class PianoController {
   }
 
   sendNote(note) {
-    if (this.channel) {
+    if (this.joined) {
       this.channel.push('play', {
         name: this.userName,
         body: { userColour: this.userColour, note },
@@ -92,7 +93,7 @@ export class PianoController {
   }
 
   stopNote(note) {
-    if (this.channel) {
+    if (this.joined) {
       this.channel.push('stop', { name: this.userName, body: { note } });
     } else {
       this.synth.triggerRelease(note, undefined, 1);
@@ -115,8 +116,8 @@ export class PianoController {
     this.userName = userName;
   }
 
-  setChannel(channel) {
-    this.channel = channel;
+  joinChannel() {
+    this.joined = true;
     this.channel.on('play', (payload) => {
       this.synth.triggerAttack([payload.body.note], undefined, 1);
       this.updateKeyColor(payload.body);

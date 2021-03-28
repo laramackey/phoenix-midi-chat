@@ -5,33 +5,29 @@ import { Presence } from 'phoenix';
 class ChatRoom {
   constructor(socket) {
     this.userColour = userColourGenerator();
-    this.socket = socket;
     this.presences = {};
-    this.channel = null;
+    this.channel = socket.channel('piano:lobby');
     this.userName = null;
     this.init();
   }
   init() {
-    const piano = new PianoController(this.userColour);
+    const piano = new PianoController(this.userColour, this.channel);
+    this.channel.join();
+    this.getPrecenseList();
+    this.listenForBandMates();
+
     document.getElementById('userName').value = userNameGenerator();
     document.getElementById('joinForm').addEventListener('submit', (e) => {
       e.preventDefault();
       piano.startTone();
-
       const userName = document.getElementById('userName').value;
       this.userName = userName;
       piano.setUserName(userName);
-
-      const channel = this.socket.channel('piano:lobby', {
+      piano.joinChannel();
+      this.channel.push('newUser', {
         userName: userName,
         userColour: this.userColour,
       });
-      this.channel = channel;
-      piano.setChannel(channel);
-      channel.join();
-
-      this.getPrecenseList();
-      this.listenForBandMates();
       this.handleChatMessage();
 
       document.getElementById('messageSubmit').disabled = false;
@@ -47,7 +43,8 @@ class ChatRoom {
     if (message) {
       this.channel.push('message', {
         name: this.userName,
-        body: { userColour: this.userColour, message },
+        userColour: this.userColour,
+        message,
       });
       document.getElementById('message').value = '';
       const chatBox = document.getElementById('chatBox');
@@ -60,10 +57,10 @@ class ChatRoom {
       const chatBox = document.querySelector('#chatBox');
       const msgBlock = document.createElement('p');
 
-      if (payload.body.message) {
+      if (payload.message) {
         msgBlock.insertAdjacentHTML(
           'beforeend',
-          `<p style="color:${payload.body.userColour}"><b>${payload.name}:</b> ${payload.body.message}</p>`
+          `<p style="color:${payload.userColour}"><b>${payload.name}:</b> ${payload.message}</p>`
         );
         chatBox.appendChild(msgBlock);
       }
