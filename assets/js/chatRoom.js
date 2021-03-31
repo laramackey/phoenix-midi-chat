@@ -1,6 +1,7 @@
+import { Presence } from 'phoenix';
 import { userNameGenerator, userColourGenerator } from './userInfoGenerators';
 import { PianoController } from './piano';
-import { Presence } from 'phoenix';
+import { MidiHandler } from './midiHandler';
 
 class ChatRoom {
   constructor(socket) {
@@ -12,6 +13,7 @@ class ChatRoom {
   }
   init() {
     const piano = new PianoController(this.userColour, this.channel);
+    new MidiHandler(piano);
     this.channel.join();
     this.getPrecenseList();
     this.listenForBandMates();

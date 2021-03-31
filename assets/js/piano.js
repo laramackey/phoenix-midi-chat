@@ -11,13 +11,6 @@ export class PianoController {
   }
   init() {
     this.startTone();
-    try {
-      navigator
-        .requestMIDIAccess()
-        .then((access) => this.onMidiAccessSuccess(access));
-    } catch (err) {
-      this.onMidiAccessFailure(err);
-    }
 
     document.documentElement.ondragstart = () => {
       return false;
@@ -50,23 +43,6 @@ export class PianoController {
         this.stopNote(key.id);
       });
     }
-  }
-
-  onMidiAccessSuccess(access) {
-    const midiAccess = access;
-    const inputs = midiAccess.inputs;
-    const inputIterators = inputs.values();
-    const firstInput = inputIterators.next().value;
-    if (firstInput) {
-      document.getElementById('midiDevice').innerHTML = firstInput.name;
-      firstInput.onmidimessage = (message) => this.handleMidiMessage(message);
-    }
-  }
-
-  onMidiAccessFailure(error) {
-    document.getElementById('midiDevice').innerHTML =
-      'Browser does not support midi, try Chrome';
-    console.log('Oopsy woopsy', error.code);
   }
 
   handleMidiMessage(message) {
