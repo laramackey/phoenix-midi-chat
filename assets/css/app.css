@@ -52,6 +52,12 @@ td {
   border: 1px solid black;
 }
 
+select {
+  font-size: 18px;
+  background-color: #cbcbcb;
+  outline-color: #e3bab3;
+}
+
 #chatWrapper {
   display: flex;
   justify-content: space-between;
@@ -110,7 +116,7 @@ td {
 
 #userName {
   background-color: #cbcbcb;
-  border: 1px solid #e3bab3;
+  outline-color: #e3bab3;
   margin-top: 5px;
   font-size: 18px;
 }

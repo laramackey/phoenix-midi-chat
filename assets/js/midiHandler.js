@@ -73,8 +73,8 @@ export class MidiHandler {
   }
 
   onMidiAccessFailure(error) {
-    document.getElementById('midiDevice').innerHTML =
-      'Browser does not support midi, try Chrome';
+    document.getElementById('midiInfo').innerHTML =
+      'Please use Google Chrome if you would like to use a MIDI device.';
     console.log('Oopsy woopsy', error.code);
   }
 
