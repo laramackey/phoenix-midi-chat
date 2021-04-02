@@ -133,6 +133,7 @@ td {
 #midiInfo {
   display: inline;
   font-size: 20px;
+  margin-left: 30px;
 }
 
 #midiDevice {

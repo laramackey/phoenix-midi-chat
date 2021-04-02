@@ -10,7 +10,10 @@
 
 
 <div id ="midiInfo">
-Midi Device: <p id="midiDevice">no device detected</p>
+Midi Device: 
+  <select id="selectMidiDevice">
+    <option>Choose device</option>
+</select>
 </div>
 <div id="chatWrapper">
   <div id="chatContainer">
